@@ -9,28 +9,86 @@ $ java -cp target/classes:target/dependency/* webserver.WebServer 8080 &
 - [자바 웹 프로그래밍 Next Step 하나씩 벗겨가는 양파껍질 학습법(박재성 저. 로드북. 2016)](http://book.naver.com/bookdb/book_detail.nhn?bid=11037465) 교재를 따라 자바 웹 프로그래밍을 실습
 - Forked from [https://github.com/slipp/web-application-server](https://github.com/slipp/web-application-server)
 
+
+
 # 각 요구사항별 학습 내용 정리
+
+| 구분     | 내용                                       |
+| :----- | ---------------------------------------- |
+| 요구사항 1 | http://localhost:8080/index.html로 접속시 응답 |
+| 요구사항 2 | get 방식으로 회원가입                            |
+| 요구사항 3 | post 방식으로 회원가입                           |
+| 요구사항 4 | redirect 방식으로 이동                         |
+| 요구사항 5 | cookie                                   |
+| 요구사항 6 | stylesheet 적용                            |
+| 배포 후   | -                                        |
+
 * 구현 단계에서는 각 요구사항을 구현하는데 집중한다. 
 * 구현을 완료한 후 구현 과정에서 새롭게 알게된 내용, 궁금한 내용을 기록한다.
 * 각 요구사항을 구현하는 것이 중요한 것이 아니라 구현 과정을 통해 학습한 내용을 인식하는 것이 배움에 중요하다. 
 
-### 요구사항 1 - http://localhost:8080/index.html로 접속시 응답
-* 
 
-### 요구사항 2 - get 방식으로 회원가입
-* 
 
-### 요구사항 3 - post 방식으로 회원가입
+## 요구사항 1 - http://localhost:8080/index.html로 접속시 응답
+> HTTP에 관한 내용은 [HTTP 완벽 가이드(데이빗고울리 외 5명 저, 이응준 외 1명 역, 인사이트, 2014)](http://book.naver.com/bookdb/book_detail.nhn?bid=8509980)를 참고했다.
+
+HTTP메시지는 단순한 줄 단위의 문자열이다.  각 줄은 캐리지 리턴과 개행 문자로(CRLF) 구성 된 두 글자의 줄바꿈 문자열으로 끝난다.
+
+- 요청메시지: 클라이언트 -> 서버
+- 응답메시지: 서버 -> 클라이언트
+
+
+
+#### 메시지 문법
+
+- 요청메시지
+
+| <메서드> <요청URL> <버전> |
+| :----------------- |
+| <헤더>               |
+| <엔티티 본문>           |
+
+- 응답메시지
+
+| <버전><상태코드><사유구절> |
+| :--------------- |
+| <헤더>             |
+| 엔티티 본문>          |
+
+HTTP 메시지는 크게 세 부분으로 나뉜다. 시작줄과 헤더는 아스키(ASCII)문자열이고, 본문은 어떤 종류의 데이터든 들어갈 수 있다(임의의 이진 데이터 또는 텍스트).
+
+- **시작줄**: 요청이라면 무엇을 해야 하는지, 응답이라면 무슨 일이 나타났는지를 나타낸다.
+- **헤더**: 시작줄 다음에 위차한 0개 이상의 헤더 필드. 각 헤더 필드는 구문 분석을 위해 쌍점(:)으로 구분하여 <이름>:<값> 형식으로 구성된다. 헤더는 빈줄로 끝난다.
+- **본문**: 빈 줄 다음에는 어떤 종류의 데이터든 들어갈 수 있는 메시지 본문이 *필요에 따라* 올 수 있다.
+
+
+
+#### 요청메시지 예시
+
+| GET /index.html HTTP/1.1                 |
+| :--------------------------------------- |
+| Host: localhost:8080<br>Connection: keep-alive<br>Cache-Control: max-age=0<br>Upgrade-Insecure-Requests: 1<br>User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36<br>Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8<br>Accept-Encoding: gzip, deflate, sdch<br>Accept-Language: ko-KR,ko;q=0.8,en-US;q=0.6,en;q=0.4<br>Cookie: Idea-5b5ff5ea=af3e68fa-3356-4dc3-8a2b-bb6b9d738798 |
+| Hi! I'm a message                        |
+
+- HTTP 메서드에 관한 내용은 [W3C의 문서](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html)를 참고한다.
+
+
+
+## 요구사항 2 - get 방식으로 회원가입
+
+* ​
+
+## 요구사항 3 - post 방식으로 회원가입
 *
 
-### 요구사항 4 - redirect 방식으로 이동
-* 
+## 요구사항 4 - redirect 방식으로 이동
+* ​
 
-### 요구사항 5 - cookie
-* 
+## 요구사항 5 - cookie
+* ​
 
-### 요구사항 6 - stylesheet 적용
-* 
+## 요구사항 6 - stylesheet 적용
+* ​
 
-### heroku 서버에 배포 후
-* 
+## 서버에 배포 후
+* ​
