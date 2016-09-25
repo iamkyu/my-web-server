@@ -1,6 +1,5 @@
 package webserver;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,8 +37,8 @@ public class RequestHandlerTest {
     @Test
     public void 소켓이_생성되면_리퀘스트_핸들러가_수행된다() throws Exception {
         //given
-        byteArrayOutputStream = new ByteArrayOutputStream();
-        byteArrayInputStream = new ByteInputStream();
+        byteArrayOutputStream = mock(ByteArrayOutputStream.class);
+        byteArrayInputStream = mock(ByteArrayInputStream.class);
 
         when(mockSocket.getOutputStream())
                 .thenReturn(byteArrayOutputStream);
