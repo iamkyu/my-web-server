@@ -4,6 +4,7 @@ import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
+import util.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -40,43 +41,64 @@ public class RequestHandler extends Thread {
             }
 
             String [] tokens = line.split(" ");
-
+            int contentLength = 0;
             while (!line.equals("")) {
-                line = br.readLine();
                 log.debug("header: {}", line);
+                line = br.readLine();
+                if (line.contains("Content-Length")) {
+                    contentLength = getContentLength(line);
+                }
             }
 
             String url = tokens[1];
-
+            byte[] resoponseBody;
             DataOutputStream dos = new DataOutputStream(out);
-            byte[] body;
-            if (url.startsWith("/user/create")) {
-                int index = url.indexOf("?");
-                String queryString = url.substring(index +1);
+
+            if (("/user/create").equals(url)) {
+                String body = IOUtils.readData(br, contentLength);
                 Map<String, String> params =
-                        HttpRequestUtils.parseQueryString(queryString);
-                User user = new User(
+                        HttpRequestUtils.parseQueryString(body);
+                 User user = new User(
                         params.get("userId"),
                         params.get("password"),
                         params.get("name"),
                         params.get("email")
                 );
                 log.debug("User: {}", user);
-                body = Files.readAllBytes(new File("./webapp/user/success.html").toPath());
+                resoponseBody = Files.readAllBytes(new File("./webapp/user/success.html").toPath());
+                response201Header(dos, resoponseBody.length);
             } else {
-                body = Files.readAllBytes(new File("./webapp" + tokens[1]).toPath());
+                resoponseBody = Files.readAllBytes(new File("./webapp" + tokens[1]).toPath());
+                response200Header(dos, resoponseBody.length);
             }
-            response200Header(dos, body.length);
-            responseBody(dos, body);
+
+            responseBody(dos, resoponseBody);
 
         } catch (IOException e) {
             log.error(e.getMessage());
         }
     }
 
+    private int getContentLength(String line) {
+        String[] headerTokens = line.split(":");
+        // Content-Length: 53 형식의 데이터 중 값만 리턴
+        return Integer.parseInt(headerTokens[1].trim());
+    }
+
     private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
         try {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
+            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
+            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void response201Header(DataOutputStream dos, int lengthOfBodyContent) {
+        try {
+            dos.writeBytes("HTTP/1.1 201 Created \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
