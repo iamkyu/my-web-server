@@ -102,8 +102,33 @@ GET 메서드의 HTTP 메시지에는 본문이 없다. 따라서 URL에 매개�
 
 
 
+
 ## 요구사항 3 - post 방식으로 회원가입
-*
+
+> HTTP의 POST 메서드에 대한 내용은 [HTTP 완벽 가이드(데이빗고울리 외 5명 저, 이응준 외 1명 역, 인사이트, 2014)](http://book.naver.com/bookdb/book_detail.nhn?bid=8509980)와 [웹프로그래머를 위한 서블릿 컨테이너의 이해(최희탁 저, 한빛미디어, 2012)](http://book.naver.com/bookdb/book_detail.nhn?bid=7082377)를 참고했다.
+
+POST 메서드는 서버에 입력 데이터를 전송 하기 위해 설계되었다 (PUT은 서버에 있는 리소스에 데이터를 입력 하기 위해 사용). HTML Form 엘리먼트에서 POST 방식으로 서버에 전송하면 Content-Type이 application/x-www-form-urlencoded로 지정되고, 메시지 바디에 전달한 매개변수의 이름/값이 '='로 구분되며, 각 쌍은 &로 나뉘어 전달 된다. 매개변수의 이름/값은 URL인코딩이라는 특정한 인코딩 처리를 하는데, 이는 이름이나 값에 '=' 또는 '&'가 포함되어도 값을 구분하는데 착오가 없게 해준다. URL인코딩에 관해서는 [W3School](http://www.w3schools.com/tags/ref_urlencode.asp)을 참고하면 좋다.
+
+
+
+#### POST 요청 HTTP 메시지 예시
+
+| POST /user/create HTTP/1.1               |
+| :--------------------------------------- |
+| Host: localhost:8080<br/>Connection: keep-alive<br/>Content-Length: 53<br/>Cache-Control: max-age=0<br/>Origin: http://localhost:8080<br/>Upgrade-Insecure-Requests: 1<br/>User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36<br/>Content-Type: application/x-www-form-urlencoded<br/>Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8<br/>Referer: http://localhost:8080/user/form.html<br/>Accept-Encoding: gzip, deflate<br/>Accept-Language: ko-KR,ko;q=0.8,en-US;q=0.6,en;q=0.4<br/>Cookie: Idea-5b5ff5ea=af3e68fa-3356-4dc3-8a2b-bb6b9d738798<br/> |
+| <엔티티 본문 (매개변수가 포함 된다)>                   |
+
+1. 헤더에서 Content-Length 를 파악한다.
+2. 헤더와 엔티티 본문은 빈 줄로 구분 된다.
+3. 해당 길이 만큼 본문을 읽는다.
+4. '&'로 끊어내 매개 변수를 나누고,
+5. '='로 이름/값 쌍을 분리 한다.
+
+위 절차를 통해 POST 방식으로 전송 받은 매개변수를 서버에서 획득할 수 있다.
+
+- HTTP POST 메서드에 관한 내용은 [W3C의 RFC2616#9.5](https://tools.ietf.org/html/rfc2616#section-9.5)을 참고한다.
+
+
 
 ## 요구사항 4 - redirect 방식으로 이동
 * ​
