@@ -65,14 +65,12 @@ public class RequestHandler extends Thread {
                         params.get("email")
                 );
                 log.debug("User: {}", user);
-                resoponseBody = Files.readAllBytes(new File("./webapp/user/success.html").toPath());
-                response201Header(dos, resoponseBody.length);
+                response201Header(dos);
             } else {
                 resoponseBody = Files.readAllBytes(new File("./webapp" + tokens[1]).toPath());
                 response200Header(dos, resoponseBody.length);
+                responseBody(dos, resoponseBody);
             }
-
-            responseBody(dos, resoponseBody);
 
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -96,11 +94,19 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private void response201Header(DataOutputStream dos, int lengthOfBodyContent) {
+    private void response201Header(DataOutputStream dos) {
         try {
             dos.writeBytes("HTTP/1.1 201 Created \r\n");
-            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
-            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void response302Header(DataOutputStream dos, String url) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 Redirect \r\n");
+            dos.writeBytes("Location: " + url + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
