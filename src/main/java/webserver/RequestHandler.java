@@ -1,5 +1,6 @@
 package webserver;
 
+import db.DataBase;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,9 +52,8 @@ public class RequestHandler extends Thread {
             }
 
             String url = tokens[1];
-            byte[] resoponseBody;
-            DataOutputStream dos = new DataOutputStream(out);
 
+            // 회원가입 처리
             if (("/user/create").equals(url)) {
                 String body = IOUtils.readData(br, contentLength);
                 Map<String, String> params =
@@ -65,11 +65,29 @@ public class RequestHandler extends Thread {
                         params.get("email")
                 );
                 log.debug("User: {}", user);
+                DataBase.addUser(user);
+                DataOutputStream dos = new DataOutputStream(out);
                 response201Header(dos);
+
+            // 로그인 처리
+            } else if (("/user/login").equals(url)) {
+                String body = IOUtils.readData(br, contentLength);
+                Map<String, String> params =
+                        HttpRequestUtils.parseQueryString(body);
+                User user = DataBase.findUserById(params.get("userId"));
+                if (user == null) {
+                    responseResouce(out, "/user/login_failed.html");
+                    return;
+                }
+                if (user.getPassword().equals(params.get("password"))) {
+                    DataOutputStream dos = new DataOutputStream(out);
+                    response302LoginSuccesHeader(dos);
+                } else {
+                    responseResouce(out, "/user/login_failed.html");
+                }
+
             } else {
-                resoponseBody = Files.readAllBytes(new File("./webapp" + tokens[1]).toPath());
-                response200Header(dos, resoponseBody.length);
-                responseBody(dos, resoponseBody);
+                responseResouce(out, url);
             }
 
         } catch (IOException e) {
@@ -103,10 +121,23 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private void response302Header(DataOutputStream dos, String url) {
+    private void responseResouce(OutputStream out, String url) {
+        try {
+            DataOutputStream dos = new DataOutputStream(out);
+            byte [] body = Files.readAllBytes(new File("./webapp" + url).toPath());
+            response200Header(dos, body.length);
+            responseBody(dos, body);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+
+    private void response302LoginSuccesHeader(DataOutputStream dos) {
         try {
             dos.writeBytes("HTTP/1.1 302 Redirect \r\n");
-            dos.writeBytes("Location: " + url + "\r\n");
+            dos.writeBytes("Set-Cookie: logined=true \r\n");
+            dos.writeBytes("Location: /index.html \r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
