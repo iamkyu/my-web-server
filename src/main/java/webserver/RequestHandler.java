@@ -1,6 +1,7 @@
 package webserver;
 
 import db.DataBase;
+import http.HttpRequest;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,8 @@ public class RequestHandler extends Thread {
                 connection.getPort());
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
+
+            HttpRequest request = new HttpRequest(in);
             BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
             String line = br.readLine();
             if (line == null) {
@@ -43,7 +46,6 @@ public class RequestHandler extends Thread {
             String[] tokens = line.split(" ");
 
             int contentLength = 0;
-            boolean logined = false;
             while (!line.equals("")) {
                 line = br.readLine();
                 log.debug("header : {}", line);
@@ -51,18 +53,18 @@ public class RequestHandler extends Thread {
                 if (line.contains("Content-Length")) {
                     contentLength = getContentLength(line);
                 }
-
-                if (line.contains("Cookie")) {
-                    logined = isLogin(line);
-                }
             }
 
             String url = getDefaultUrl(tokens);
             if ("/user/create".equals(url)) {
                 String body = IOUtils.readData(br, contentLength);
                 Map<String, String> params = HttpRequestUtils.parseQueryString(body);
-                User user = new User(params.get("userId"), params.get("password"), params.get("name"),
-                        params.get("email"));
+                User user = new User(
+                        request.getParameter("userId"),
+                        request.getParameter("password"),
+                        request.getParameter("name"),
+                        request.getParameter("email")
+                );
                 log.debug("user : {}", user);
                 DataBase.addUser(user);
                 DataOutputStream dos = new DataOutputStream(out);
@@ -84,7 +86,7 @@ public class RequestHandler extends Thread {
                     responseResource(out, "/user/login_failed.html");
                 }
             } else if ("/user/list".equals(url)) {
-                if (!logined) {
+                if (!isLogin(request.getHeader("Cookie"))) {
                     responseResource(out, "/index.html");
                     return;
                 }
@@ -120,9 +122,8 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private boolean isLogin(String line) {
-        String[] headerTokens = line.split(":");
-        Map<String, String> cookies = HttpRequestUtils.parseCookies(headerTokens[1].trim());
+    private boolean isLogin(String cookie) {
+        Map<String, String> cookies = HttpRequestUtils.parseCookies(cookie);
         String value = cookies.get("logined");
         if (value == null) {
             return false;
