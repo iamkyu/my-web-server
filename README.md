@@ -158,7 +158,18 @@ POST 메서드는 서버에 입력 데이터를 전송 하기 위해 설계되�
 
 
 ## 요구사항 6 - stylesheet 적용
-* ​
+stylesheet 를 html 페이지 내에 링크 시켰을 경우, 이 컨텐츠를 얻기 위해 다시 서버에 요청을 보낸다. 이 때, 해당 요청 (*.css)을 처리하는 로직을 추가하고, HTTP 응답을 할 때에는 Content-Type 헤더 값을 text/html이 아닌 text/css로 응답하여야 한다.
+
+
 
 ## 서버에 배포 후
-* ​
+HTTP에 기본에 대한 간단한 정리는 [https://www3.ntu.edu.sg/home/ehchua/programming/webprogramming/HTTP_Basics.html](https://www3.ntu.edu.sg/home/ehchua/programming/webprogramming/HTTP_Basics.html) 이 곳을 참고하면 좋다.
+
+
+
+#### 자동화
+
+나의 경우 위 과정을 수행하면서 코드에 새로운 기능을 더해 커밋을 하면 자동으로 빌드를 진행하고 다시 배포 하며, 메신저로 빌드 결과를 알려 주는 환경 구성을 실습하였다. 관련 내용은 블로그에 작성하였다.
+
+- [Jenkins CI 삽질기](http://www.iamkyu.com/119)
+- [Jenkins-Github-Slack 연동 설정](http://www.iamkyu.com/121)
