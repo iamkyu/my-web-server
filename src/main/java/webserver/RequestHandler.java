@@ -51,7 +51,7 @@ public class RequestHandler extends Thread {
                 if (user != null) {
                     if (user.login(request.getParameter("password"))) {
                         response.addHeader("Set-Cookie", "logind=true");
-                        response.sendRedirect("/index.html");
+                        response.sendRedirect("/user/list");
                     } else {
                         response.sendRedirect("/user/login_failed.html");
                     }
@@ -92,7 +92,7 @@ public class RequestHandler extends Thread {
 
     private boolean isLogin(String cookie) {
         Map<String, String> cookies = HttpRequestUtils.parseCookies(cookie);
-        String value = cookies.get("logined");
+        String value = cookies.get("logind");
         if (value == null) {
             return false;
         }
