@@ -3,11 +3,10 @@ package controller;
 import db.DataBase;
 import http.HttpRequest;
 import http.HttpResponse;
+import http.HttpSession;
 import model.User;
-import util.HttpRequestUtils;
 
 import java.util.Collection;
-import java.util.Map;
 
 /**
  * @author Kj Nam
@@ -16,7 +15,7 @@ import java.util.Map;
 public class ListUserController implements Controller {
     @Override
     public void service(HttpRequest request, HttpResponse response) {
-        if (!isLogin(request.getHeader("Cookie"))) {
+        if (!isLogin(request.getSession())) {
             response.sendRedirect("/user/login.html");
             return;
         }
@@ -41,12 +40,11 @@ public class ListUserController implements Controller {
         response.forwardBody(sb.toString());
     }
 
-    private boolean isLogin(String cookie) {
-        Map<String, String> cookies = HttpRequestUtils.parseCookies(cookie);
-        String value = cookies.get("logind");
-        if (value == null) {
+    private boolean isLogin(HttpSession session) {
+        Object user = session.getAttribute("user");
+        if (user == null) {
             return false;
         }
-        return Boolean.parseBoolean(value);
+        return true;
     }
 }
