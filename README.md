@@ -169,6 +169,8 @@ HTTP에 기본에 대한 간단한 정리는 [https://www3.ntu.edu.sg/home/ehchu
 
 #### 자동화
 
+ ![deploy-process](deploy-process.png)
+
 나의 경우 위 과정을 수행하면서 코드에 새로운 기능을 더해 커밋을 하면 자동으로 빌드를 진행하고 다시 배포 하며, 메신저로 빌드 결과를 알려 주는 환경 구성을 실습하였다. 관련 내용은 블로그에 작성하였다.
 
 - [Jenkins CI 삽질기](http://www.iamkyu.com/119)
