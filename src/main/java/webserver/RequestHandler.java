@@ -83,6 +83,11 @@ public class RequestHandler extends Thread {
                     response302LoginSuccessHeader(dos);
                 }
             } else {
+                if (REQUEST_URI.endsWith(".css")) {
+                    responseCssResource(dos, REQUEST_URI);
+                    return;
+                }
+
                 if (REQUEST_URI.endsWith("/user/list")) {
                     if (!loggedin) {
                         responseResource(out, "/user/login.html");
@@ -144,10 +149,28 @@ public class RequestHandler extends Thread {
         }
     }
 
+    private void responseCssResource(OutputStream out, String url) throws IOException {
+        DataOutputStream dos = new DataOutputStream(out);
+        byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
+        response200CssHeader(dos, body.length);
+        responseBody(dos, body);
+    }
+
     private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
         try {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
+            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void response200CssHeader(DataOutputStream dos, int lengthOfBodyContent) {
+        try {
+            dos.writeBytes("HTTP/1.1 201 Created \r\n");
+            dos.writeBytes("Content-Type: text/css;charset=utf-8\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
