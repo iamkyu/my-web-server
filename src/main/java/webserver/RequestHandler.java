@@ -41,7 +41,10 @@ public class RequestHandler extends Thread {
             log.debug("request line: {}", line);
 
             String [] tokens = line.split(" ");
+            final String HTTP_METHOD = tokens[0];
+            final String REQUEST_URI = tokens[1];
             int contentLength = 0;
+            DataOutputStream dos = new DataOutputStream(out);
 
             while (!("").equals(line)) {
                 line  = br.readLine();
@@ -52,7 +55,7 @@ public class RequestHandler extends Thread {
                 }
             }
 
-            if (tokens[1].startsWith("/user/create")) {
+            if (REQUEST_URI.startsWith("/user/create")) {
                 String body = IOUtils.readData(br, contentLength);
                 log.debug("body: {}", body);
 
@@ -62,10 +65,11 @@ public class RequestHandler extends Thread {
                 DataBase.addUser(user);
 
                 log.debug("New User Register: {}", user.getUserId());
+                response302Header(dos, "/index.html");
+                return;
             }
 
-            DataOutputStream dos = new DataOutputStream(out);
-            byte[] body = Files.readAllBytes(new File("./webapp" + tokens[1]).toPath());
+            byte[] body = Files.readAllBytes(new File("./webapp" + REQUEST_URI).toPath());
 
             response200Header(dos, body.length);
             responseBody(dos, body);
@@ -79,6 +83,16 @@ public class RequestHandler extends Thread {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void response302Header(DataOutputStream dos, String location) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 Found \r\n");
+            dos.writeBytes("Location: " + location);
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
