@@ -50,27 +50,49 @@ public class RequestHandler extends Thread {
                 line  = br.readLine();
                 log.debug("header: {}", line);
                 if (line.contains("Content-Length")) {
-                    contentLength = Integer.parseInt(
-                            HttpRequestUtils.parseHeader(line).getValue());
+                    contentLength = getContentLength(line);
                 }
             }
 
-            if (REQUEST_URI.startsWith("/user/create")) {
+            if (HTTP_METHOD.equals("POST")) {
                 String body = IOUtils.readData(br, contentLength);
-                log.debug("body: {}", body);
-
                 Map<String, String> params = HttpRequestUtils.parseQueryString(body);
-                User user = new User(params.get("userId"), params.get("password"),
-                        params.get("name"), params.get("email"));
-                DataBase.addUser(user);
 
-                log.debug("New User Register: {}", user.getUserId());
-                response302Header(dos, "/index.html");
-                return;
+                if (REQUEST_URI.endsWith("user/create")) {
+                    DataBase.addUser(new User(
+                            params.get("userId"),
+                            params.get("password"),
+                            params.get("name"),
+                            params.get("email")));
+                    log.debug("New User Register! ID: {}", params.get("userId"));
+                    response302Header(dos, "/index.html");
+                }
+
+                if (REQUEST_URI.endsWith("user/login")) {
+                    User user = DataBase.findUserById(params.get("userId"));
+                    if (user == null || (!user.getPassword().equals(params.get("password")))) {
+                        response302Header(dos, "/user/login_failed.html");
+                        return;
+                    }
+                    log.debug("User Login Success! ID: {}", params.get("userId"));
+                    response302LoginSuccessHeader(dos);
+                }
+            } else {
+                responseResource(dos, REQUEST_URI);
             }
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
 
-            byte[] body = Files.readAllBytes(new File("./webapp" + REQUEST_URI).toPath());
+    private int getContentLength(String headerLine) {
+        return Integer.parseInt(HttpRequestUtils.parseHeader(headerLine).getValue());
+    }
 
+    private void responseResource(OutputStream out, String url) {
+        try {
+            DataOutputStream dos = new DataOutputStream(out);
+            byte [] body = Files.readAllBytes(new File("./webapp" + url).toPath());
             response200Header(dos, body.length);
             responseBody(dos, body);
         } catch (IOException e) {
@@ -93,6 +115,17 @@ public class RequestHandler extends Thread {
         try {
             dos.writeBytes("HTTP/1.1 302 Found \r\n");
             dos.writeBytes("Location: " + location);
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void response302LoginSuccessHeader(DataOutputStream dos) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 Redirect \r\n");
+            dos.writeBytes("Set-Cookie: login=true \r\n");
+            dos.writeBytes("Location: /index.html \r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
