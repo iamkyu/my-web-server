@@ -1,7 +1,10 @@
 package webserver;
 
+import db.DataBase;
+import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.HttpRequestUtils;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -12,6 +15,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.util.Map;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -36,6 +40,16 @@ public class RequestHandler extends Thread {
                     tokens = line.split(" ");
                 }
                 log.debug("{}", line);
+            }
+
+            if (tokens[1].startsWith("/user/create")) {
+                String [] requestUrl = tokens[1].split("\\?");
+                Map<String, String> params = HttpRequestUtils.parseQueryString(requestUrl[1]);
+                User user = new User(params.get("userId"), params.get("password"),
+                        params.get("name"), params.get("email"));
+                DataBase.addUser(user);
+
+                log.debug("New User Register: {}", user.getUserId());
             }
 
             DataOutputStream dos = new DataOutputStream(out);

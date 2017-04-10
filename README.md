@@ -63,3 +63,23 @@ HTTP 메시지는 크게 세 부분으로 나뉜다.
 
 
 시작줄과 헤더는 아스키(ASCII)문자열이고, 본문은 어떤 종류의 데이터든 들어갈 수 있다 (임의의 이진 데이터 또는 텍스트).
+
+## 요구사항 2 - get 방식으로 회원가입
+
+GET은 가장 흔히 쓰이는 메서드로 주로 서버에게 리소스를 요청하기 위해 쓰인다. HTTP는 안전한 메서드라 불리는 메서드 집합을 정의하는데,  GET과 HEAD 메서드가 안전하다고 할 수 있다. 이는 이 메서드들을 사용하는 HTTP 요청의 결과로 서버에 어떤 작용도 없음을 의미한다(참고 [RFC2616#9.1.1 Safe Methhods](https://tools.ietf.org/html/rfc2616#section-9.1.1)). 작용이 없다는 것은 HTTP 요청의 결과로 인해 서버에서 일어나는 일은 아무것도 없다는 의미이다. 하지만 안전한 메서드가 서버에 작용을 유발하지 않는다는 보장은 없다. 이는 개발자의 구현 방식에 달렸다.
+
+- HTTP GET 메서드에 관한 내용은 [RFC2616#9.3 GET](https://tools.ietf.org/html/rfc2616#section-9.3) 을 참고한다.
+
+#### GET 요청 HTTP 메시지 예시
+
+| GET /user/create?userId=myid&password=pass HTTP/1.1 |
+| :--------------------------------------- |
+| Host: localhost:8080<br>Connection: keep-alive<br>User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36<br>Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8 |
+
+GET 메서드의 HTTP 메시지에는 본문이 없고, 매개변수를 URL에 "?" 문자 이후로 포함한다. 따라서 HTTP 메시지의 첫째줄(상태줄)의 HTTP메소드 다음으로 오는 요청URI를 분석(Parsing) 하여 매개변수를 얻을 수 있다.
+
+1. URI에서 '?' 문자로 쿼리스트링을 획득 후
+2. '&' 문자로 각각의 매개변수를 분리하고
+3. '=' 문자로 매개변수를 이름/값으로 분리 한다.
+
+위 과정를 통해 GET 방식으로 전달받은 매개변수를 획득할 수 있다.
