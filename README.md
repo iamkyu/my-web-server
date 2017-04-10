@@ -83,3 +83,23 @@ GET 메서드의 HTTP 메시지에는 본문이 없고, 매개변수를 URL에 "
 3. '=' 문자로 매개변수를 이름/값으로 분리 한다.
 
 위 과정를 통해 GET 방식으로 전달받은 매개변수를 획득할 수 있다.
+
+
+## 요구사항 3 - post 방식으로 회원가입
+POST 메서드는 서버에 입력 데이터를 전송 하기 위해 설계되었다. HTML Form 엘리먼트에서 POST 방식으로 서버에 전송하면 Content-Type이 application/x-www-form-urlencoded로 지정되고, 메시지 바디에 전달한 매개변수의 이름/값이 '=' 로 구분되며, 각 쌍은 &로 나뉘어 전달 된다. 매개변수의 이름/값은 URL인코딩 처리를 하는데, 이는 이름이나 값에 '=' 또는 '&'가 포함되어도 매개변수를 구분하는데 착오가 없게 한다. URL인코딩에 관해서는 [W3School](http://www.w3schools.com/tags/ref_urlencode.asp)을 참고하면 좋다.
+
+- HTTP POST 메서드에 관한 내용은 [RFC2616#9.5](https://tools.ietf.org/html/rfc2616#section-9.5) 을 참고한다.
+
+#### POST 요청 HTTP 메시지 예시
+
+| POST /user/create HTTP/1.1               |
+| :--------------------------------------- |
+| Host: localhost:8080<br/>Connection: keep-alive<br/>Content-Length: 53<br/>Cache-Control: max-age=0<br/>Origin: http://localhost:8080<br/>Upgrade-Insecure-Requests: 1<br/>User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36<br/>Content-Type: application/x-www-form-urlencoded<br/>Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8<br/>Referer: http://localhost:8080/user/form.html<br/>Accept-Encoding: gzip, deflate<br/>Accept-Language: ko-KR,ko;q=0.8,en-US;q=0.6,en;q=0.4<br/>Cookie: Idea-5b5ff5ea=af3e68fa-3356-4dc3-8a2b-bb6b9d738798<br/> |
+| userId=user&password=mypass&name=myname&email=myemail |
+
+ 1. 헤더에서 Content-Length 를 파악함으로서 메시지 본문에 데이터가 존재 하는지, 데이터가 존재한다면 크기가 얼마나 되는지 알 수 있다.
+ 2. 헤더와 엔티티 본문은 빈 줄(CRLF) 로 구분 된다. Content-Length 만큼 본문을 읽는다.
+ 3. '&' 문자로 각각의 매개변수를 분리하고
+ 4. '=' 문자로 매개변수를 이름/값으로 분리 한다.
+
+ 위 과정을 통해 POST 방식으로 전송 받은 매개변수를 서버에서 획득할 수 있다.

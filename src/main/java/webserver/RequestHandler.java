@@ -5,6 +5,7 @@ import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
+import util.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -32,19 +33,30 @@ public class RequestHandler extends Thread {
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            String line = br.readLine();
 
-            String line = null;
-            String [] tokens = new String[3];
-            while (!"".equals(line = br.readLine()) || line == null) {
-                if (line.startsWith("GET")) {
-                    tokens = line.split(" ");
+            if (line == null)
+                return;
+
+            log.debug("request line: {}", line);
+
+            String [] tokens = line.split(" ");
+            int contentLength = 0;
+
+            while (!("").equals(line)) {
+                line  = br.readLine();
+                log.debug("header: {}", line);
+                if (line.contains("Content-Length")) {
+                    contentLength = Integer.parseInt(
+                            HttpRequestUtils.parseHeader(line).getValue());
                 }
-                log.debug("{}", line);
             }
 
             if (tokens[1].startsWith("/user/create")) {
-                String [] requestUrl = tokens[1].split("\\?");
-                Map<String, String> params = HttpRequestUtils.parseQueryString(requestUrl[1]);
+                String body = IOUtils.readData(br, contentLength);
+                log.debug("body: {}", body);
+
+                Map<String, String> params = HttpRequestUtils.parseQueryString(body);
                 User user = new User(params.get("userId"), params.get("password"),
                         params.get("name"), params.get("email"));
                 DataBase.addUser(user);
@@ -54,6 +66,7 @@ public class RequestHandler extends Thread {
 
             DataOutputStream dos = new DataOutputStream(out);
             byte[] body = Files.readAllBytes(new File("./webapp" + tokens[1]).toPath());
+
             response200Header(dos, body.length);
             responseBody(dos, body);
         } catch (IOException e) {
