@@ -1,0 +1,10 @@
+machine:
+  timezone: Asia/Seoul
+  java:
+        version: oraclejdk8
+test:
+  override:
+    - mvn -DskipTests=false clean cobertura:cobertura
+  post:
+    - bash <(curl -s https://codecov.io/bash)
+
