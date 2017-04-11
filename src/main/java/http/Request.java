@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import static http.ConstPool.CONTENT_LENGTH;
 import static http.Method.POST;
 
 /**
@@ -20,7 +21,6 @@ import static http.Method.POST;
  */
 public class Request {
     private static final Logger log = LoggerFactory.getLogger(Request.class);
-    private final String CONTENT_LENGTH = "Content-Length";
 
     private Method method;
     private String path;

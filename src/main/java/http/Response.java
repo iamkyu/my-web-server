@@ -12,15 +12,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static http.ConstPool.CONTENT_LENGTH;
+import static http.ConstPool.CONTENT_TYPE;
+import static http.ConstPool.ROOT_PATH;
+
 /**
  * @author Kj Nam
  * @since 2017-04-11
  */
 public class Response {
     private static final Logger log = LoggerFactory.getLogger(Response.class);
-    private final String CONTENT_TYPE = "Content-type";
-    private final String CONTENT_LENGTH = "Content-Length";
-    private final String ROOT_PATH = "./webapp";
 
     private ContentType contentType;
     private DataOutputStream dos;
