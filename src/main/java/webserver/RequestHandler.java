@@ -1,23 +1,19 @@
 package webserver;
 
 import db.DataBase;
+import http.HttpRequest;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.HttpRequestUtils;
-import util.IOUtils;
 
-import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.util.Collection;
-import java.util.Map;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -33,109 +29,67 @@ public class RequestHandler extends Thread {
                 connection.getPort());
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            String line = br.readLine();
-
-            if (line == null)
-                return;
-
-            log.debug("request line: {}", line);
-
-            String [] tokens = line.split(" ");
-            final String HTTP_METHOD = tokens[0];
-            final String REQUEST_URI = tokens[1];
-            int contentLength = 0;
-            boolean loggedin = false;
+            HttpRequest request = new HttpRequest(in);
             DataOutputStream dos = new DataOutputStream(out);
 
-            while (!("").equals(line)) {
-                line  = br.readLine();
-                log.debug("header: {}", line);
-                if (line.contains("Content-Length")) {
-                    contentLength = getContentLength(line);
-                }
-                if (line.contains("Cookie")) {
-                    loggedin = isLogin(line);
-                }
+            if (request.getPath().equals("/user/create")) {
+                DataBase.addUser(new User(
+                        request.getParameter("userId"),
+                        request.getParameter("password"),
+                        request.getParameter("name"),
+                        request.getParameter("email")));
+                log.debug("New User Register! ID: {}", request.getParameter("userId"));
+                response302Header(dos, "/index.html");
             }
 
-            if (HTTP_METHOD.equals("POST")) {
-                String body = IOUtils.readData(br, contentLength);
-                Map<String, String> params = HttpRequestUtils.parseQueryString(body);
-
-                if (REQUEST_URI.endsWith("user/create")) {
-                    DataBase.addUser(new User(
-                            params.get("userId"),
-                            params.get("password"),
-                            params.get("name"),
-                            params.get("email")));
-                    log.debug("New User Register! ID: {}", params.get("userId"));
-                    response302Header(dos, "/index.html");
+            if (request.getPath().equals("/user/login")) {
+                User user = DataBase.findUserById(request.getParameter("userId"));
+                if (user == null || (!user.getPassword().equals(request.getParameter("password")))) {
+                    response302Header(dos, "/user/login_failed.html");
+                    return;
                 }
+                log.debug("User Login Success! ID: {}", request.getParameter("userId"));
+                response302LoginSuccessHeader(dos);
+            }
 
-                if (REQUEST_URI.endsWith("user/login")) {
-                    User user = DataBase.findUserById(params.get("userId"));
-                    if (user == null || (!user.getPassword().equals(params.get("password")))) {
-                        response302Header(dos, "/user/login_failed.html");
-                        return;
-                    }
-                    log.debug("User Login Success! ID: {}", params.get("userId"));
-                    response302LoginSuccessHeader(dos);
-                }
-            } else {
-                if (REQUEST_URI.endsWith(".css")) {
-                    responseCssResource(dos, REQUEST_URI);
+            if (request.getPath().endsWith(".css")) {
+                responseCssResource(dos, request.getPath());
+                return;
+            }
+
+            if (request.getPath().endsWith("/user/list")) {
+                if (!request.isLoggedIn()) {
+                    responseResource(out, "/user/login.html");
                     return;
                 }
 
-                if (REQUEST_URI.endsWith("/user/list")) {
-                    if (!loggedin) {
-                        responseResource(out, "/user/login.html");
-                        return;
-                    }
-
-                    Collection<User> users = DataBase.findAll();
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("<div><ul><li><a href='/'>Home</a></li></ul></div>");
-                    sb.append("<table border='1'>");
+                Collection<User> users = DataBase.findAll();
+                StringBuilder sb = new StringBuilder();
+                sb.append("<div><ul><li><a href='/'>Home</a></li></ul></div>");
+                sb.append("<table border='1'>");
+                sb.append("<tr>");
+                sb.append("<th>아이디</th>");
+                sb.append("<th>이름</th>");
+                sb.append("<th>이메일</th>");
+                sb.append("<tr>");
+                for (User user : users) {
                     sb.append("<tr>");
-                    sb.append("<th>아이디</th>");
-                    sb.append("<th>이름</th>");
-                    sb.append("<th>이메일</th>");
-                    sb.append("<tr>");
-                    for (User user : users) {
-                        sb.append("<tr>");
-                        sb.append("<td>" + user.getUserId() + "</td>");
-                        sb.append("<td>" + user.getName() + "</td>");
-                        sb.append("<td>" + user.getEmail() + "</td>");
-                        sb.append("</tr>");
-                    }
-                    sb.append("</table>");
-                    byte[] body = sb.toString().getBytes();
-                    response200Header(dos, body.length);
-                    responseBody(dos, body);
-                    return;
+                    sb.append("<td>" + user.getUserId() + "</td>");
+                    sb.append("<td>" + user.getName() + "</td>");
+                    sb.append("<td>" + user.getEmail() + "</td>");
+                    sb.append("</tr>");
                 }
-
-                responseResource(dos, REQUEST_URI);
+                sb.append("</table>");
+                byte[] body = sb.toString().getBytes();
+                response200Header(dos, body.length);
+                responseBody(dos, body);
+                return;
             }
+
+            responseResource(dos, request.getPath());
         } catch (IOException e) {
             log.error(e.getMessage());
         }
-    }
-
-    private int getContentLength(String headerLine) {
-        return Integer.parseInt(HttpRequestUtils.parseHeader(headerLine).getValue());
-    }
-
-    private boolean isLogin(String line) {
-        String[] headerTokens = line.split(":");
-        Map<String, String> cookies = HttpRequestUtils.parseCookies(headerTokens[1].trim());
-        String value = cookies.get("login");
-        if (value == null) {
-            return false;
-        }
-        return Boolean.parseBoolean(value);
     }
 
     private void responseResource(OutputStream out, String url) {
