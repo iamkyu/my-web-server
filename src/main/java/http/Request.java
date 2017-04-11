@@ -22,8 +22,7 @@ import static http.Method.POST;
 public class Request {
     private static final Logger log = LoggerFactory.getLogger(Request.class);
 
-    private Method method;
-    private String path;
+    private Status status;
     private boolean loggedIn = false;
 
     private Map<String, String> params;
@@ -43,7 +42,7 @@ public class Request {
         if (!validMessageLine(line))
             return;
 
-        extractStatusLine(line);
+        status = new Status(line);
         line = br.readLine();
 
         while (validMessageLine(line)) {
@@ -54,18 +53,11 @@ public class Request {
     }
 
     private void parseMessageBody() throws IOException {
-        if (!POST.equals(method))
+        if (!POST.equals(status.getMethod()))
             return;
 
         String body = IOUtils.readData(br, Integer.parseInt(getHeader(CONTENT_LENGTH)));
         params = HttpRequestUtils.parseQueryString(body);
-    }
-
-    private void extractStatusLine(String statusLine) {
-        String [] tokens = statusLine.split(" ");
-        this.method = Method.valueOf(tokens[0]);
-        this.path = tokens[1];
-        log.debug("request line: {}", statusLine);
     }
 
     private void extractHeaders(String headerLine) {
@@ -97,11 +89,11 @@ public class Request {
     }
 
     public Method getMethod() {
-        return method;
+        return status.getMethod();
     }
 
     public String getPath() {
-        return path;
+        return status.getPath();
     }
 
     public String getHeader(String key) {
