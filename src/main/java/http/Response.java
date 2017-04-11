@@ -16,18 +16,18 @@ import java.util.Set;
  * @author Kj Nam
  * @since 2017-04-11
  */
-public class HttpResponse {
-    private static final Logger log = LoggerFactory.getLogger(HttpResponse.class);
+public class Response {
+    private static final Logger log = LoggerFactory.getLogger(Response.class);
     private final String CONTENT_TYPE = "Content-type";
     private final String CONTENT_LENGTH = "Content-Length";
     private final String ROOT_PATH = "./webapp";
 
-    private HttpContentType contentType;
+    private ContentType contentType;
     private DataOutputStream dos;
     private Map<String, String> headers;
 
-    public HttpResponse(OutputStream out) {
-        contentType = new HttpContentType();
+    public Response(OutputStream out) {
+        contentType = new ContentType();
         headers = new HashMap<>();
         dos = new DataOutputStream(out);
     }

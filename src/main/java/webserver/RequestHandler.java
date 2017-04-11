@@ -1,8 +1,8 @@
 package webserver;
 
 import db.DataBase;
-import http.HttpRequest;
-import http.HttpResponse;
+import http.Request;
+import http.Response;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Collection;
 
-import static http.HttpMethod.GET;
+import static http.Method.GET;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -29,8 +29,8 @@ public class RequestHandler extends Thread {
                 connection.getPort());
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
-            HttpRequest request = new HttpRequest(in);
-            HttpResponse response = new HttpResponse(out);
+            Request request = new Request(in);
+            Response response = new Response(out);
 
             if (GET.equals(request.getMethod())) {
                 if ("/user/list".equals(request.getPath())) {

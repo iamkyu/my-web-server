@@ -12,17 +12,17 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
-import static http.HttpMethod.POST;
+import static http.Method.POST;
 
 /**
  * @author Kj Nam
  * @since 2017-04-10
  */
-public class HttpRequest {
-    private static final Logger log = LoggerFactory.getLogger(HttpRequest.class);
+public class Request {
+    private static final Logger log = LoggerFactory.getLogger(Request.class);
     private final String CONTENT_LENGTH = "Content-Length";
 
-    private HttpMethod method;
+    private Method method;
     private String path;
     private boolean loggedIn = false;
 
@@ -30,7 +30,7 @@ public class HttpRequest {
     private Map<String, String> headers;
     private final BufferedReader br;
 
-    public HttpRequest(InputStream in) throws IOException {
+    public Request(InputStream in) throws IOException {
         params = new HashMap<>();
         headers = new HashMap<>();
         br = new BufferedReader(new InputStreamReader(in));
@@ -63,7 +63,7 @@ public class HttpRequest {
 
     private void extractStatusLine(String statusLine) {
         String [] tokens = statusLine.split(" ");
-        this.method = HttpMethod.valueOf(tokens[0]);
+        this.method = Method.valueOf(tokens[0]);
         this.path = tokens[1];
         log.debug("request line: {}", statusLine);
     }
@@ -96,7 +96,7 @@ public class HttpRequest {
         return loggedIn;
     }
 
-    public HttpMethod getMethod() {
+    public Method getMethod() {
         return method;
     }
 

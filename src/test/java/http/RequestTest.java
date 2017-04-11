@@ -5,16 +5,16 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import static http.HttpMethod.GET;
-import static http.HttpMethod.POST; import static org.hamcrest.CoreMatchers.is; import static org.junit.Assert.*;
+import static http.Method.GET;
+import static http.Method.POST; import static org.hamcrest.CoreMatchers.is; import static org.junit.Assert.*;
 
 /**
  * @author Kj Nam
  * @since 2017-04-11
  */
-public class HttpRequestTest {
+public class RequestTest {
     private InputStream in;
-    private HttpRequest request;
+    private Request request;
 
     @Test
     public void GET_요청을_보낸다() throws Exception {
@@ -28,7 +28,7 @@ public class HttpRequestTest {
         in = new ByteArrayInputStream(message.getBytes("UTF-8"));
 
         //when
-        request = new HttpRequest(in);
+        request = new Request(in);
 
         //then
         assertThat(request.getMethod(), is(GET));
@@ -51,7 +51,7 @@ public class HttpRequestTest {
         in = new ByteArrayInputStream(message.getBytes("UTF-8"));
 
         //when
-        request = new HttpRequest(in);
+        request = new Request(in);
 
         //then
         assertThat(request.getMethod(), is(POST));

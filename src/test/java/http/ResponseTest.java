@@ -13,8 +13,8 @@ import static org.junit.Assert.*;
  * @author Kj Nam
  * @since 2017-04-11
  */
-public class HttpResponseTest {
-    private HttpResponse response;
+public class ResponseTest {
+    private Response response;
     private ByteArrayOutputStream byteArrayOutputStream;
     private byte[] byteArray;
     private String responseMessage;
@@ -26,7 +26,7 @@ public class HttpResponseTest {
     @Before
     public void init() throws IOException {
         byteArrayOutputStream = new ByteArrayOutputStream();
-        response = new HttpResponse(byteArrayOutputStream);
+        response = new Response(byteArrayOutputStream);
     }
 
     @Test
