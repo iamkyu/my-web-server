@@ -20,15 +20,15 @@ public class HttpResponse {
     private static final Logger log = LoggerFactory.getLogger(HttpResponse.class);
     private final String CONTENT_TYPE = "Content-type";
     private final String CONTENT_LENGTH = "Content-Length";
+    private final String ROOT_PATH = "./webapp";
 
-
-    private final DataOutputStream dos;
+    private HttpContentType contentType;
+    private DataOutputStream dos;
     private Map<String, String> headers;
-    private Map<String, String> contentTypeMap;
 
     public HttpResponse(OutputStream out) {
+        contentType = new HttpContentType();
         headers = new HashMap<>();
-        contentTypeMap = new HashMap() {{ put("css", "text/css"); put("js", "application.javascript"); }};
         dos = new DataOutputStream(out);
     }
 
@@ -38,13 +38,8 @@ public class HttpResponse {
 
     public void forward(String url) {
         try {
-            byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
-
-            String contentType = "text/html;charset=utf-8";
-            if (url.endsWith("css")) contentType = contentTypeMap.get("css");
-            if (url.endsWith("js"))  contentType = contentTypeMap.get("js");
-
-            headers.put(CONTENT_TYPE, contentType);
+            byte[] body = Files.readAllBytes(new File(ROOT_PATH + url).toPath());
+            headers.put(CONTENT_TYPE, contentType.getTypes(url));
             headers.put(CONTENT_LENGTH, String.valueOf(body.length));
             response200Header();
             responseBody(body);
@@ -55,7 +50,7 @@ public class HttpResponse {
 
     public void forwardBody(String body) {
         byte[] contents = body.getBytes();
-        headers.put(CONTENT_TYPE, "text/html;charset=utf-8");
+        headers.put(CONTENT_TYPE, contentType.getTypes("html"));
         headers.put(CONTENT_LENGTH, contents.length + "\r\n");
         response200Header();
         responseBody(contents);
