@@ -16,8 +16,7 @@ import static org.junit.Assert.*;
 public class DataBaseTest {
     @Before
     public void setUp() {
-        // 신규유저 1명 등록
-        DataBase.addUser(new User("user1", "my-password", "my-name", "my-email"));
+        // admin 1명이 추가 되어 있음
     }
 
     @Test
@@ -36,7 +35,7 @@ public class DataBaseTest {
     @Test
     public void 유저아이디로_유저를_찾는다() {
         //given
-        String userId = "user1";
+        String userId = "admin";
         User user;
 
         //when
