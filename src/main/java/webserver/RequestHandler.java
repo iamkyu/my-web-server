@@ -1,9 +1,11 @@
 package webserver;
 
-import db.DataBase;
+import controller.Controller;
+import controller.CreateUserController;
+import controller.ListUserController;
+import controller.LoginController;
 import http.Request;
 import http.Response;
-import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,83 +13,49 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.Collection;
-
-import static http.Method.GET;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
 
     private Socket connection;
+    private final Map<String, Controller> controllers;
 
     public RequestHandler(Socket connectionSocket) {
         this.connection = connectionSocket;
+        controllers = new HashMap() {{
+            put("/user/create", new CreateUserController());
+            put("/user/login", new LoginController());
+            put("/user/list", new ListUserController());
+        }};
     }
 
     public void run() {
-        log.debug("New Client Connect! Connected IP : {}, Port : {}", connection.getInetAddress(),
-                connection.getPort());
+        log.debug("New Client Connect! Connected IP : {}, Port : {}",
+                connection.getInetAddress(), connection.getPort());
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             Request request = new Request(in);
             Response response = new Response(out);
 
-            if (GET.equals(request.getMethod())) {
-                if ("/user/list".equals(request.getPath())) {
-                    if (!request.isLoggedIn()) {
-                        response.sendRedirect("/user/login.html");
-                    }
-                    Collection<User> users = DataBase.findAll();
-                    response.forwardBody(buildUserListHTML(users));
-                }
-                response.forward(request.getPath());
+            Controller controller = controllers.get(request.getPath());
+            if (controller == null) {
+                String path = getDefaultPath(request.getPath());
+                response.forward(path);
             } else {
-                if ("/user/create".equals(request.getPath())) {
-                    DataBase.addUser(new User(
-                            request.getParameter("userId"),
-                            request.getParameter("password"),
-                            request.getParameter("name"),
-                            request.getParameter("email")));
-                    log.debug("New User Register! ID: {}", request.getParameter("userId"));
-
-                    response.sendRedirect("/index.html");
-                }
-
-                if ("/user/login".equals(request.getPath())) {
-                    User user = DataBase.findUserById(request.getParameter("userId"));
-                    if (user == null || (!user.getPassword().equals(request.getParameter("password")))) {
-                        response.sendRedirect("/user/login_failed.html");
-                        return;
-                    }
-                    log.debug("User Login Success! ID: {}", request.getParameter("userId"));
-
-                    response.addHeader("Set-Cookie", "login=true");
-                    response.sendRedirect("/index.html");
-                }
+                controller.service(request, response);
             }
         } catch (IOException e) {
             log.error(e.getMessage());
         }
     }
 
-    private String buildUserListHTML(Collection<User> users) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<div><ul><li><a href='/'>Home</a></li></ul></div>");
-        sb.append("<table border='1'>");
-        sb.append("<tr>");
-        sb.append("<th>아이디</th>");
-        sb.append("<th>이름</th>");
-        sb.append("<th>이메일</th>");
-        sb.append("<tr>");
-        for (User user : users) {
-            sb.append("<tr>");
-            sb.append("<td>" + user.getUserId() + "</td>");
-            sb.append("<td>" + user.getName() + "</td>");
-            sb.append("<td>" + user.getEmail() + "</td>");
-            sb.append("</tr>");
+    private String getDefaultPath(String path) {
+        if (path.endsWith("/")) {
+            return "/index.html";
         }
-        sb.append("</table>");
 
-        return sb.toString();
+        return path;
     }
 }
