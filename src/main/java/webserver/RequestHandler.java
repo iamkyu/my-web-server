@@ -21,9 +21,11 @@ public class RequestHandler extends Thread {
 
     private Socket connection;
     private final Map<String, Controller> controllers;
+    private final RequestMapping mapping;
 
     public RequestHandler(Socket connectionSocket) {
         this.connection = connectionSocket;
+        mapping = new RequestMapping();
         controllers = new HashMap() {{
             put("/user/create", new CreateUserController());
             put("/user/login", new LoginController());
@@ -39,7 +41,7 @@ public class RequestHandler extends Thread {
             Request request = new Request(in);
             Response response = new Response(out);
 
-            Controller controller = controllers.get(request.getPath());
+            Controller controller = mapping.getController(request);
             if (controller == null) {
                 String path = getDefaultPath(request.getPath());
                 response.forward(path);
@@ -55,7 +57,6 @@ public class RequestHandler extends Thread {
         if (path.endsWith("/")) {
             return "/index.html";
         }
-
         return path;
     }
 }
