@@ -1,7 +1,5 @@
 package http;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
 import util.IOUtils;
 
@@ -20,18 +18,14 @@ import static http.Method.POST;
  * @since 2017-04-10
  */
 public class Request {
-    private static final Logger log = LoggerFactory.getLogger(Request.class);
-
     private Status status;
-    private boolean loggedIn = false;
-
+    private Headers headers;
     private Map<String, String> params;
-    private Map<String, String> headers;
     private final BufferedReader br;
 
     public Request(InputStream in) throws IOException {
+        headers = new Headers();
         params = new HashMap<>();
-        headers = new HashMap<>();
         br = new BufferedReader(new InputStreamReader(in));
         parseMessage();
     }
@@ -46,7 +40,7 @@ public class Request {
         line = br.readLine();
 
         while (validMessageLine(line)) {
-            extractHeaders(line);
+            headers.add(line);
             line = br.readLine();
         }
         parseMessageBody();
@@ -60,32 +54,16 @@ public class Request {
         params = HttpRequestUtils.parseQueryString(body);
     }
 
-    private void extractHeaders(String headerLine) {
-        String[] header = headerLine.split(": ");
-        headers.put(header[0].trim(), header[1].trim());
-
-        if (headerLine.contains("Cookie")) {
-            loggedIn = setLoginStatus(headerLine);
-        }
-        log.debug("header: {}", headerLine);
-    }
-
     private boolean validMessageLine(String line) {
         return (line != null) && (!"".equals(line));
     }
 
-    private boolean setLoginStatus(String line) {
-        String[] headerTokens = line.split(":");
-        Map<String, String> cookies = HttpRequestUtils.parseCookies(headerTokens[1].trim());
-        String value = cookies.get("login");
-        if (value == null) {
-            return false;
-        }
-        return Boolean.parseBoolean(value);
+    public boolean isLoggedIn() {
+        return headers.getLoginStatus();
     }
 
-    public boolean isLoggedIn() {
-        return loggedIn;
+    public String getHeader(String key) {
+        return headers.get(key);
     }
 
     public Method getMethod() {
@@ -94,10 +72,6 @@ public class Request {
 
     public String getPath() {
         return status.getPath();
-    }
-
-    public String getHeader(String key) {
-        return headers.get(key);
     }
 
     public String getParameter(String key) {
