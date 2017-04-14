@@ -11,13 +11,13 @@ import java.util.Map;
  * @author Kj Nam
  * @since 2017-04-14
  */
-public class Headers {
+class Headers {
     private static final Logger log = LoggerFactory.getLogger(Headers.class);
 
     private Map<String, String> headers = new HashMap<>();
     private Map<String, String> cookies = new HashMap<>();
 
-    public void add(String headerLine) {
+    void add(String headerLine) {
         String[] header = headerLine.split(": ");
         headers.put(header[0].trim(), header[1].trim());
 
@@ -27,11 +27,11 @@ public class Headers {
         log.debug("header: {}", headerLine);
     }
 
-    public String get(String key) {
+    String get(String key) {
         return headers.get(key);
     }
 
-    public boolean getLoginStatus() {
+    boolean getLoginStatus() {
         String value = cookies.get("login");
         if (value == null) {
             return false;

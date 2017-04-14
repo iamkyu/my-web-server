@@ -7,10 +7,10 @@ import java.util.Map;
  * @author Kj Nam
  * @since 2017-04-12
  */
-public class ContentType {
+class ContentType {
     private Map<String, String> types;
 
-    public ContentType() {
+    ContentType() {
         types= new HashMap() {{
             put("html", "text/html;charset=utf-8");
             put("css", "text/css");
@@ -18,7 +18,7 @@ public class ContentType {
         }};
     }
 
-    public String getTypes(String requestURL) {
+    String getTypes(String requestURL) {
         String [] split = requestURL.split("\\.");
         String extension = split[split.length-1];
 
